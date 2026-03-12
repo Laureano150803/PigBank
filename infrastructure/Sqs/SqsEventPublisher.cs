@@ -36,7 +36,7 @@ namespace DistributedSis.infrastructure.Sqs
 
         public async Task PublishNotificationAsync<T>(string type, T data)
         {
-            // Obtenemos la URL de la cola de notificaciones desde el entorno
+
             var notificationQueueUrl = Environment.GetEnvironmentVariable("NOTIFICATION_QUEUE_URL");
 
             if (string.IsNullOrEmpty(notificationQueueUrl))
@@ -50,7 +50,7 @@ namespace DistributedSis.infrastructure.Sqs
                 data = data
             };
 
-            // Usamos CamelCase para asegurar que "type" y "data" queden en minúscula en el JSON
+
             var messageBody = JsonSerializer.Serialize(payload, new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase

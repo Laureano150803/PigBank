@@ -34,7 +34,7 @@ namespace DistributedSis.application.UseCases
             };
             var loginEvent = new
             {
-                date = DateTime.UtcNow.ToString("O"), // [cite: 257]
+                date = DateTime.UtcNow.ToString("O"), 
                 email = request.Email,
                 userId = user.Id
             };
@@ -66,7 +66,7 @@ namespace DistributedSis.application.UseCases
 
             var updateEvent = new
             {
-                date = DateTime.UtcNow.ToString("O"), // [cite: 264]
+                date = DateTime.UtcNow.ToString("O"), 
                 userId = userId
             };
             await _userRepository.UpdateUserAsync(existingUser);
@@ -75,8 +75,6 @@ namespace DistributedSis.application.UseCases
 
         public async Task<string> UploadProfileImage(string userId, uploadImageRequest request) {
             byte[] imageBytes = Convert.FromBase64String(request.Image);
-
-            // 2. Definir nombre del archivo (ej: avatars/uuid.png)
             string extension = request.FileType.Split('/')[1];
             string fileName = $"avatars/{userId}.{extension}";
             using (var stream = new MemoryStream(imageBytes))
@@ -92,7 +90,6 @@ namespace DistributedSis.application.UseCases
                 await _s3Client.PutObjectAsync(putRequest);
             }
 
-            // 3. Actualizar el path en el usuario en DynamoDB
             var user = await _userRepository.GetUserByIdAsync(userId);
             user.Image = fileName;
             await _userRepository.UpdateUserAsync(user);

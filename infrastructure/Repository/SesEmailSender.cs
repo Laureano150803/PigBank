@@ -8,7 +8,7 @@ namespace DistributedSis.infrastructure.Repository
     public class SesEmailSender : IEmailSender
     {
         private readonly IAmazonSimpleEmailServiceV2 _sesClient;
-        private readonly string _fromEmail = "laureanohurtado1@gmail.com"; // <-- IMPORTANTE
+        private readonly string _fromEmail = "laureanohurtado1@gmail.com"; 
 
         public SesEmailSender(IAmazonSimpleEmailServiceV2 sesClient)
         {
@@ -18,13 +18,13 @@ namespace DistributedSis.infrastructure.Repository
         {
             var sendRequest = new SendEmailRequest
             {
-                // En V2, Source pasa a ser FromEmailAddress
+
                 FromEmailAddress = _fromEmail,
                 Destination = new Destination
                 {
                     ToAddresses = new List<string> { toEmail }
                 },
-                // En V2, el Message se envuelve en Content -> Simple
+
                 Content = new EmailContent
                 {
                     Simple = new Message

@@ -16,26 +16,21 @@ namespace DistributedSis.application.UseCases
         {
             _userRepository = userRepository;
             _eventPublisher = eventPublisher;
-            // La clave secreta debería venir de Environment Variables (Secrets Manager idealmente)
             _jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? "una_clave_super_secreta_de_32_caracteres";
         }
         public async Task<LoginResponse> ExecuteAsync(LoginRequest request)
         {
-            // 1. Buscar el usuario por email
             var user = await _userRepository.GetUserByEmailAsync(request.Email);
 
-            // 2. Validar existencia y password
-            // BCrypt.Verify compara el texto plano con el hash guardado
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
             {
                 throw new UnauthorizedAccessException("Credenciales inválidas.");
             }
 
-            // 3. Generar el Token JWT
             var token = GenerateJwtToken(user.Id, user.Email);
             var loginEvent = new
             {
-                date = DateTime.UtcNow.ToString("O"), // [cite: 257]
+                date = DateTime.UtcNow.ToString("O"),
                 email = request.Email,
                 userId = user.Id
             };
@@ -54,7 +49,7 @@ namespace DistributedSis.application.UseCases
                 new Claim("userId", userId),
                 new Claim(ClaimTypes.Email, email)
             }),
-                Expires = DateTime.UtcNow.AddHours(2), // Expira en 2 horas
+                Expires = DateTime.UtcNow.AddHours(2),
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256Signature)

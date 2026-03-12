@@ -20,7 +20,7 @@ namespace DistributedSis.infrastructure.Repository
             var config = new DynamoDBOperationConfig
             {
                 OverrideTableName = _tableName,
-                IndexName = "CardIdIndex" // <--- Importante mencionar el índice
+                IndexName = "CardIdIndex" 
             };
 
             var search = _dynamoDb.QueryAsync<Transaction>(cardId, config);
@@ -31,7 +31,7 @@ namespace DistributedSis.infrastructure.Repository
         {
             var config = new DynamoDBOperationConfig { OverrideTableName = _tableName };
 
-            // SaveAsync mapea todo automáticamente y maneja palabras reservadas
+
             await _dynamoDb.SaveAsync(transaction, config);
         }
         public async Task<List<Transaction>> GetTransactionsReportAsync(string cardId, string startDate, string endDate)
@@ -42,7 +42,7 @@ namespace DistributedSis.infrastructure.Repository
                 IndexName = "CardIdIndex"
             };
 
-            // DynamoDB busca la tarjeta y filtra solo las transacciones en ese rango de fechas
+
             var search = _dynamoDb.QueryAsync<Transaction>(
                 cardId,
                 QueryOperator.Between,
