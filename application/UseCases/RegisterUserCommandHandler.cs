@@ -41,9 +41,7 @@ namespace DistributedSis.application.UseCases
             await _eventPublisher.PublishNotificationAsync("USER.LOGIN", loginEvent);
             await _userRepository.SaveUserAsync(user);
             await _eventPublisher.PublishCardRequestAsync(user.Id, "CREDIT");
-            await _eventPublisher.PublishCardRequestAsync(user.Id, "DEBIT");
-           
-            await _eventPublisher.PublishNotificationAsync("USER.LOGIN", loginEvent);
+            await _eventPublisher.PublishCardRequestAsync(user.Id, "DEBIT");           
         }
 
         public async Task<User> GetUserProfileHandler(string userId)
@@ -67,7 +65,8 @@ namespace DistributedSis.application.UseCases
             var updateEvent = new
             {
                 date = DateTime.UtcNow.ToString("O"), // [cite: 264]
-                userId = userId
+                userId = userId,
+                email = existingUser.Email
             };
             await _userRepository.UpdateUserAsync(existingUser);
             await _eventPublisher.PublishNotificationAsync("USER.UPDATE", updateEvent);

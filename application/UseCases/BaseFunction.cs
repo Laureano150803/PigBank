@@ -10,6 +10,7 @@ using DistributedSis.domain.interfaces;
 using DistributedSis.infrastructure.EntryPoints;
 using DistributedSis.infrastructure.Repository;
 using DistributedSis.infrastructure.Sqs;
+using StackExchange.Redis;
 using System.Net;
 using System.Text.Json;
 
@@ -33,6 +34,12 @@ namespace DistributedSis.application.UseCases
             services.AddSingleton<IAmazonSQS>(new AmazonSQSClient());
             services.AddTransient<IDynamoDBContext, DynamoDBContext>();
 
+            //redis
+            var redisEndpoint = Environment.GetEnvironmentVariable("REDIS_ENDPOINT") ?? "localhost";
+            var redisPort = Environment.GetEnvironmentVariable("REDIS_PORT") ?? "6379";
+
+            var connectionString = $"{redisEndpoint}:{redisPort},abortConnect=false,ssl=false";
+            services.AddSingleton<IConnectionMultiplexer>(sp => ConnectionMultiplexer.Connect(connectionString));
             // 2. Repositorios
             services.AddTransient<IUserRepository, DynamoDbUserRepository>();
             services.AddTransient<ICardRepository, DynamoDbCardRepository>();
@@ -57,6 +64,7 @@ namespace DistributedSis.application.UseCases
             services.AddTransient<CreateCardCommandHandler>();
             services.AddTransient<PurchaseCommandHandler>();
             services.AddTransient<NotificationCommandHandler>();
+            services.AddTransient<CatalogQueryHandler>();
         }
         protected APIGatewayProxyResponse CreateResponse(HttpStatusCode statusCode, object body)
         {

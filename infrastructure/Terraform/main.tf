@@ -372,6 +372,7 @@ resource "aws_lambda_function" "card_paid_credit_card_lambda" {
   handler       = "DistributedSis::DistributedSis.infrastructure.EntryPoints.TransactionFunctions::PaidCreditCardHandler"
   role          = aws_iam_role.lambda_exec_role.arn
   runtime       = "dotnet8"
+  timeout	   = 30
   environment {
     variables = {
       CARD_TABLE             = aws_dynamodb_table.Cards.name
