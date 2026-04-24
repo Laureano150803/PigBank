@@ -33,13 +33,9 @@ namespace DistributedSis.infrastructure.EntryPoints
                     return this.CreateResponse(HttpStatusCode.BadRequest, new { error = "El cuerpo de la petición es inválido." });
                 }
 
-                // 2. Resolver el caso de uso desde el contenedor
+
                 var commandHandler = this.ServiceProvider.GetRequiredService<RegisterUserCommandHandler>();
-
-                // 3. Ejecutar la orquestación (encripta, guarda en DynamoDB y envía a SQS)
                 await commandHandler.Handle(registerRequest);
-
-                // 4. Retornar un HTTP 201 Created si todo salió bien
                 return this.CreateResponse(HttpStatusCode.Created, new { message = "Usuario registrado exitosamente." });
             }
             catch (Exception ex)

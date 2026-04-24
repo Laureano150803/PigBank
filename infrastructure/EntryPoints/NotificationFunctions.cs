@@ -20,13 +20,13 @@ namespace DistributedSis.infrastructure.EntryPoints
                 {
                     context.Logger.LogInformation($"Mensaje SQS recibido: {record.Body}");
 
-                    // 1. Deserializar
+
                     var notificationEvent = JsonSerializer.Deserialize<NotificationMessageDto>(record.Body, new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
                     });
 
-                    // 2. Ejecutar caso de uso
+
                     await commandHandler.ProcessNotificationAsync(notificationEvent);
 
                     context.Logger.LogInformation($"Notificación procesada exitosamente.");
@@ -34,15 +34,12 @@ namespace DistributedSis.infrastructure.EntryPoints
                 catch (Exception ex)
                 {
                     context.Logger.LogError($"Error procesando mensaje SQS {record.MessageId}: {ex.Message}");
-                    // MUY IMPORTANTE: Relanzar la excepción para que SQS marque el mensaje como fallido 
-                    // y eventualmente lo envíe a la Dead Letter Queue (DLQ)
+
                     throw;
                 }
             }
         }
-        /// <summary>
-        /// Escucha la DLQ notification-email-error-sqs
-        /// </summary>
+
         public async Task ErrorHandler(SQSEvent sqsEvent, ILambdaContext context)
         {
             context.Logger.LogInformation($"Procesando {sqsEvent.Records.Count} mensajes fallidos en la DLQ...");

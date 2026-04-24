@@ -12,7 +12,7 @@ namespace DistributedSis.domain.entities
         public string Type { get; set; }
 
         [DynamoDBProperty("content")]
-        public string Content { get; set; } // Guardaremos el JSON serializado de la data
+        public string Content { get; set; } 
 
         [DynamoDBRangeKey("createdAt")]
         public string CreatedAt { get; set; } = DateTime.UtcNow.ToString("O");

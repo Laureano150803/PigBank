@@ -2,12 +2,10 @@ provider "aws" {
   region = "us-east-1"
 }
 
-# --- RECURSOS AUXILIARES ---
 resource "random_id" "suffix" {
   byte_length = 4
 }
 
-# --- DYNAMODB ---
 resource "aws_dynamodb_table" "Users" {
   name         = "Users"
   billing_mode = "PAY_PER_REQUEST"
@@ -99,7 +97,6 @@ resource "aws_dynamodb_table" "NotificationErrors" {
   }
 }
 
-# --- SQS ---
 resource "aws_sqs_queue" "create_request_card_dlq" {
   name = "error-create-request-card-sqs"
 }
@@ -221,7 +218,7 @@ resource "aws_iam_role_policy" "lambda_policy" {
     ]
   })
 }
-# --- LAMBDAS ---
+
 
 resource "aws_lambda_function" "register_user_lambda" {
   function_name = "register-user-lambda"
@@ -428,20 +425,20 @@ resource "aws_lambda_function" "send_notifications_error_lambda" {
   }
 }
 
-# Disparador desde la DLQ
+
 resource "aws_lambda_event_source_mapping" "dlq_trigger" {
   event_source_arn = aws_sqs_queue.create_request_card_dlq.arn
   function_name    = aws_lambda_function.card_request_failed_lambda.arn
 }
 
-# --- API GATEWAY ---
+
 
 resource "aws_apigatewayv2_api" "banking_api" {
   name          = "banking-api"
   protocol_type = "HTTP"
 }
 
-# --- INTEGRACIONES API GATEWAY ---
+
 
 resource "aws_apigatewayv2_integration" "register_integration" {
   api_id           = aws_apigatewayv2_api.banking_api.id
@@ -507,7 +504,7 @@ resource "aws_apigatewayv2_integration" "card_report_integration" {
   integration_uri  = aws_lambda_function.card_get_report_lambda.invoke_arn
 }
 
-# --- RUTAS API GATEWAY ---
+
 
 resource "aws_apigatewayv2_route" "register_route" {
   api_id    = aws_apigatewayv2_api.banking_api.id
@@ -569,7 +566,7 @@ resource "aws_apigatewayv2_route" "card_report_route" {
   target    = "integrations/${aws_apigatewayv2_integration.card_report_integration.id}"
 }
 
-# --- PERMISOS DE INVOCACIÓN (LAMBDA PERMISSIONS) ---
+
 
 resource "aws_lambda_permission" "apigw_register" {
   action        = "lambda:InvokeFunction"
@@ -653,7 +650,7 @@ resource "aws_lambda_event_source_mapping" "dlq_notification_trigger" {
   batch_size       = 5
 }
 
-# --- DEPLOYMENT STAGE & OUTPUTS ---
+
 
 resource "aws_apigatewayv2_stage" "default_stage" {
   api_id      = aws_apigatewayv2_api.banking_api.id

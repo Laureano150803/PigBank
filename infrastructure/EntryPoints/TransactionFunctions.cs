@@ -9,10 +9,6 @@ namespace DistributedSis.infrastructure.EntryPoints
 {
     public class TransactionFunctions : BaseFunction
     {
-        /// <summary>
-        /// Handler para la ruta POST /transactions/purchase
-        /// </summary>
-        /// 
 
         public async Task<APIGatewayProxyResponse> PurchaseHandler(APIGatewayProxyRequest request, ILambdaContext context)
         {
@@ -22,7 +18,6 @@ namespace DistributedSis.infrastructure.EntryPoints
             {
                 var commandHandler = ServiceProvider.GetRequiredService<PurchaseCommandHandler>();
 
-                // Deserialización del Body
                 var purchaseRequest = JsonSerializer.Deserialize<PurchaseRequest>(request.Body, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
@@ -33,14 +28,13 @@ namespace DistributedSis.infrastructure.EntryPoints
                     return CreateResponse(HttpStatusCode.BadRequest, new { message = "Cuerpo de la solicitud vacío o inválido." });
                 }
 
-                // Ejecución del Caso de Uso
                 await commandHandler.ExecuteAsync(purchaseRequest);
 
                 return CreateResponse(HttpStatusCode.OK, new { message = "Compra realizada con éxito." });
             }
             catch (InvalidOperationException ex)
             {
-                // Errores de negocio: Saldo insuficiente, tarjeta inactiva, etc.
+
                 return CreateResponse(HttpStatusCode.BadRequest, new { message = ex.Message });
             }
             catch (KeyNotFoundException ex)
@@ -57,7 +51,7 @@ namespace DistributedSis.infrastructure.EntryPoints
         {
             try
             {
-                // Obtener el ID de la URL: /transactions/save/{card_id}
+
                 if (!request.PathParameters.TryGetValue("card_id", out var cardId))
                 {
                     return CreateResponse(HttpStatusCode.BadRequest, new { message = "Falta el ID de la tarjeta en la URL." });
@@ -86,9 +80,7 @@ namespace DistributedSis.infrastructure.EntryPoints
             }
         }
 
-        /// <summary>
-        /// POST /card/paid/{card_id}
-        /// </summary>
+
         public async Task<APIGatewayProxyResponse> PaidCreditCardHandler(APIGatewayProxyRequest request, ILambdaContext context)
         {
             context.Logger.LogInformation("Iniciando pago de tarjeta de crédito...");
@@ -107,7 +99,6 @@ namespace DistributedSis.infrastructure.EntryPoints
                     return CreateResponse(HttpStatusCode.BadRequest, new { message = "Monto de pago inválido." });
                 }
 
-                // Asumiendo que registraste la clase PaidCreditCardCommandHandler en tu DI y tiene un método ExecuteAsync
                 var commandHandler = ServiceProvider.GetRequiredService<PurchaseCommandHandler>();
                 await commandHandler.PaidCreditCardCommandHandler(cardId, paymentRequest.Amount);
 
@@ -127,9 +118,7 @@ namespace DistributedSis.infrastructure.EntryPoints
                 return CreateResponse(HttpStatusCode.InternalServerError, new { message = "Error procesando el pago." });
             }
         }
-        /// <summary>
-        /// POST /card/activate
-        /// </summary>
+
         public async Task<APIGatewayProxyResponse> ActivateCardHandler(APIGatewayProxyRequest request, ILambdaContext context)
         {
             context.Logger.LogInformation("Iniciando activación de tarjeta...");
@@ -145,15 +134,13 @@ namespace DistributedSis.infrastructure.EntryPoints
 
                 var commandHandler = ServiceProvider.GetRequiredService<PurchaseCommandHandler>();
 
-                // NOTA: Tu código usa userId pero lo pasa a GetByIdAsync(userId). 
-                // Asegúrate de que tu lógica de repositorio busque por el campo correcto.
                 await commandHandler.ActivateCardCommandHandler(activateRequest.UserId);
 
                 return CreateResponse(HttpStatusCode.OK, new { message = "Tarjeta activada exitosamente tras validar las 10 transacciones." });
             }
             catch (InvalidOperationException ex)
             {
-                // Aquí caerá el error si tienen menos de 10 transacciones
+
                 return CreateResponse(HttpStatusCode.BadRequest, new { message = ex.Message });
             }
             catch (KeyNotFoundException ex)
@@ -172,14 +159,12 @@ namespace DistributedSis.infrastructure.EntryPoints
 
             try
             {
-                // 1. Validar Path Parameter
+
                 if (request.PathParameters == null || !request.PathParameters.TryGetValue("card_id", out var cardId))
                 {
                     return CreateResponse(HttpStatusCode.BadRequest, new { message = "El parámetro card_id es requerido en la URL." });
                 }
 
-                // 2. Extraer fechas del Query String o del Body 
-                // Nota: Un GET en API Gateway V2 puede recibir Query Strings en request.QueryStringParameters
      
                 string startDate = request.QueryStringParameters?.ContainsKey("start") == true ? request.QueryStringParameters["start"] : null;
                 string endDate = request.QueryStringParameters?.ContainsKey("end") == true ? request.QueryStringParameters["end"] : null;
@@ -196,10 +181,10 @@ namespace DistributedSis.infrastructure.EntryPoints
                     return CreateResponse(HttpStatusCode.BadRequest, new { message = "Se requieren las fechas 'start' y 'end'." });
                 }
 
-                // 3. Ejecutar el caso de uso
+
                 var commandHandler = ServiceProvider.GetRequiredService<PurchaseCommandHandler>();
 
-                // Asumimos que este método devolverá la URL del S3 donde se guardó el reporte
+
                 string reportUrl = await commandHandler.GenerateReportAsync(cardId, startDate, endDate);
 
 

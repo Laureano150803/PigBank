@@ -20,7 +20,7 @@ namespace DistributedSis.application.UseCases
             var newCard = new Card
             {
                 UserId = request.UserId,
-                Type = request.request.ToUpper() // "DEBIT" o "CREDIT"
+                Type = request.request.ToUpper() 
             };
 
             if (newCard.Type == "DEBIT")
@@ -31,9 +31,7 @@ namespace DistributedSis.application.UseCases
             else if (newCard.Type == "CREDIT")
             {
                 var random = new Random();
-                double score = random.Next(0, 101); // Genera score de 0 a 100
-
-                // Aplicamos el algoritmo asegurando uso de decimales para no perder precisión
+                double score = random.Next(0, 101); 
                 decimal amount = 100m + (decimal)(score / 100.0) * (10000000m - 100m);
 
                 newCard.Status = "PENDING";

@@ -22,14 +22,12 @@ namespace DistributedSis.application.UseCases
         protected readonly IServiceProvider ServiceProvider;
         protected BaseFunction() {
             var services = new ServiceCollection();
-            // Configura todo lo común aquí (DynamoDB, Repositorios)
             ConfigureServices(services);
             ServiceProvider = services.BuildServiceProvider();
         }
 
         private void ConfigureServices(IServiceCollection services)
         {
-            // 1. Clientes de AWS (Inyectados como Singleton por eficiencia)
             services.AddSingleton<IAmazonDynamoDB>(new AmazonDynamoDBClient());
             services.AddSingleton<IAmazonSQS>(new AmazonSQSClient());
             services.AddTransient<IDynamoDBContext, DynamoDBContext>();
@@ -49,8 +47,6 @@ namespace DistributedSis.application.UseCases
             services.AddTransient<IEmailSender, SesEmailSender>();
             services.AddAWSService<IAmazonS3>();
             services.AddAWSService<IAmazonSimpleEmailServiceV2>();
-
-            // 3. Publicador de Eventos (Usa variable de entorno de Terraform)
             services.AddTransient<IEventPublisher>(sp =>
             {
                 var sqsClient = sp.GetRequiredService<IAmazonSQS>();
@@ -58,7 +54,6 @@ namespace DistributedSis.application.UseCases
                 return new SqsEventPublisher(sqsClient, queueUrl);
             });
 
-            // 4. Registrar TODOS los Command Handlers de tu aplicación
             services.AddTransient<RegisterUserCommandHandler>();
             services.AddTransient<LoginUserCommandHandler>();
             services.AddTransient<CreateCardCommandHandler>();
@@ -75,7 +70,7 @@ namespace DistributedSis.application.UseCases
                 Headers = new Dictionary<string, string>
                 {
                     { "Content-Type", "application/json" },
-                    { "Access-Control-Allow-Origin", "*" } // CORS
+                    { "Access-Control-Allow-Origin", "*" } 
                 }
             };
         }
